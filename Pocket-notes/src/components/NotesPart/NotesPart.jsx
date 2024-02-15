@@ -7,17 +7,81 @@ import lock from '../../assets/lock.svg';
 
 
 function NotesPart({selcGrpName, selcGrpClr}) {
+  const [data, setData] = useState('');
+  const [displayData, setDisplayData] = useState(()=>{
+    const storedData = localStorage.getItem('notes');
+    return storedData ? JSON.parse(storedData) : {};
+  });
+  const notesContainerRef = useRef(null);
+
+  const handleChange = (e)=>{
+    setData(e.target.value);
+    
+  }
+
+  const handleEnter =()=>{
+    if(data.trim() !== ''){
+      const now = new Date();
+      const formattedTimeStamp = formatDateTime(now);
+      const newData = {text: data, datetime: formattedTimeStamp};
+      setDisplayData((prevNotes)=>({
+        ...prevNotes,
+        [selcGrpName]: [...(prevNotes[selcGrpName] || []), newData],
+      }))
+      setData('');
+    }
+  }
+  useEffect(() => {
+    const storedData = localStorage.getItem('notes');
+    if (storedData) {
+      setDisplayData(JSON.parse(storedData));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('notes', JSON.stringify(displayData));
+  }, [displayData]);
+
+  const formatDateTime = (date) => {
+    const monthNames = [
+      'January', 'February', 'March',
+      'April', 'May', 'June', 'July',
+      'August', 'September', 'October',
+      'November', 'December'
+    ];
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedDate = `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+    const formattedTime = `${hours % 12 || 12}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
+    const dateTimeString = `${formattedTime}\n${formattedDate}`;
+
+  return dateTimeString;
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      handleEnter();
+      e.preventDefault();
+    }
+  }
+
+  useEffect(() => {
+    if (notesContainerRef.current) {
+      notesContainerRef.current.scrollTop = notesContainerRef.current.scrollHeight;
+    }
+  }, [displayData]);
 
     
   return (
     <div className="container2">
-      {selectedGroupName ? (
+      {selcGrpName ? (
         <div>
           <div className='title'>
             <span
               className="initials"
               style={{
-                backgroundColor: selectedGroupColor,
+                backgroundColor: selcGrpClr,
                 fontSize: '20px',
                 padding: '10px',
                 borderRadius: '50%',
@@ -25,13 +89,13 @@ function NotesPart({selcGrpName, selcGrpClr}) {
                 fontWeight: '600',
               }}
             >
-              {selectedGroupName.slice(0, 2).toUpperCase()}
+              {selcGrpName.slice(0, 2).toUpperCase()}
             </span>
-            <p style={{ fontSize: '20px', display: 'inline', padding: '12px', paddingLeft: '20px', fontWeight: '600' }}>{selectedGroupName}</p>
+            <p style={{ fontSize: '20px', display: 'inline', padding: '12px', paddingLeft: '20px', fontWeight: '600' }}>{selcGrpName}</p>
           </div>
           <div className='notes-display' ref={notesContainerRef}>
-            {displayData[selectedGroupName] ? (
-              displayData[selectedGroupName].map((showData, index) => (
+            {displayData[selcGrpName] ? (
+              displayData[selcGrpName].map((showData, index) => (
                 <div key={index} className='notes-align'>
                   <pre style={{ width: '15vw', textAlign: 'center', fontFamily: 'DM Sans, sans-serif'  }}>{showData.datetime}</pre>
                   <pre style={{ width: '55vw', marginLeft: '5%', fontFamily: 'DM Sans, sans-serif' }}>{showData.text}</pre>
@@ -50,8 +114,8 @@ function NotesPart({selcGrpName, selcGrpClr}) {
         <div className="home">
           <img src={frontImg} width={500} alt="Front" />
           <p style={{ fontSize: '30px' }}>Pocket Notes</p>
-          {selectedGroupName && (
-            <p style={{ padding: '10px' }}>Selected Notes Group: {selectedGroupName}</p>
+          {selcGrpName && (
+            <p style={{ padding: '10px' }}>Selected Notes Group: {selcGrpName}</p>
           )}
            <p style={{ padding: '10px' }}>
             Send and receive messages without keeping your phone online,<br />
