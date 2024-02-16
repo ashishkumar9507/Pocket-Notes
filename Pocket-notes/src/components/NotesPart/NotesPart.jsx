@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef} from 'react';
 import './NotesPart.css' ;
 import front from '../../assets/front.png';
-import send from '../../assets/enter.svg';
+import send from '../../assets/send.svg';
 import lock from '../../assets/lock.svg';
 
 
@@ -107,12 +107,12 @@ function NotesPart({selcGrpName, selcGrpClr}) {
           </div>
           <div className='notes-input'>
             <textarea className='textarea' placeholder='Enter your text here...' value={data} onChange={handleChange} onKeyDown={handleKeyDown}></textarea>
-            <img className='enter' src={enter} onClick={handleEnter} />
+            <img className='enter' src={send} onClick={handleEnter} />
           </div>
         </div>
       ) : (
         <div className="home">
-          <img src={frontImg} width={500} alt="Front" />
+          <img src={front} width={500} alt="Front" />
           <p style={{ fontSize: '30px' }}>Pocket Notes</p>
           {selcGrpName && (
             <p style={{ padding: '10px' }}>Selected Notes Group: {selcGrpName}</p>
